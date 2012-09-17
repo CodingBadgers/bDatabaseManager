@@ -1,0 +1,13 @@
+bDatabaseManager
+==========
+
+Description:
+------------
+
+
+Features:
+---------
+
+
+Permissions:
+------------

@@ -1,0 +1,10 @@
+name: bDatabaseManager
+version: "${project.version}"
+main: uk.thecodingbadgers.bDatabaseManager.bDatabaseManager
+depend: []
+softdepend: []
+website: "http://www.mcbadgercraft.com"
+description: ""
+author: "TheCodingBadgers"
+authors:
+  - "TheCodingBadgers"
