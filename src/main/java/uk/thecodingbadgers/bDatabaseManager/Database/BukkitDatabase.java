@@ -70,17 +70,19 @@ public class BukkitDatabase {
 	
 	public void End() {
 		
-		if (m_thread == null)
-			return;
-		
-		try {
-			m_statement.close();
-		} catch (SQLException e) {
-			e.printStackTrace();
+		if (m_thread != null) {
+			m_thread.Kill();
+			m_thread = null;			
 		}
 		
-		m_thread.Kill();
-		m_thread = null;
+		if (m_statement != null) {
+			try {
+				m_statement.close();
+				m_statement = null;
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
+		}
 		
 	}
 	
