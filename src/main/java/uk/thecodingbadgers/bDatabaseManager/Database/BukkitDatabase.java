@@ -21,7 +21,6 @@ public class BukkitDatabase {
 	protected int m_updateTime = 0;
 	
 	public BukkitDatabase(String name, JavaPlugin owner, DatabaseType type, int updateTime) {
-		
 		m_plugin = owner;
 		m_databaseName = name;
 		m_updateTime = updateTime;
@@ -31,6 +30,14 @@ public class BukkitDatabase {
 	{
 
 	} 
+	
+	public String getName() {
+		return m_databaseName;
+	}
+	
+	public String getOwnerName() {
+		return m_plugin.getName();
+	}
 	
 	// Only used on sql
 	public boolean login(String host, String user, String password, int port) {

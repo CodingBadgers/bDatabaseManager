@@ -40,4 +40,19 @@ public class bDatabaseManager extends JavaPlugin
 		return database;
 	}
 
+	static public BukkitDatabase FindDatabase(String name, String owner) {
+		
+		for (BukkitDatabase dbase : m_databases) {
+			
+			if (name.equalsIgnoreCase(dbase.getName())) {
+				if (owner.equalsIgnoreCase(owner)) {
+					return dbase;
+				}				
+			}
+			
+		}
+		
+		return null;
+	}
+	
 }
