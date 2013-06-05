@@ -8,6 +8,8 @@ import java.sql.SQLException;
 
 import uk.thecodingbadgers.bDatabaseManager.Utilities;
 import uk.thecodingbadgers.bDatabaseManager.bDatabaseManager.DatabaseType;
+import uk.thecodingbadgers.bDatabaseManager.DatabaseTable.DatabaseTable;
+import uk.thecodingbadgers.bDatabaseManager.DatabaseTable.SQLDatabaseTable;
 import uk.thecodingbadgers.bDatabaseManager.Thread.SQLThread;
 
 import org.bukkit.plugin.java.JavaPlugin;
@@ -195,6 +197,26 @@ public class SQLDatabase extends BukkitDatabase {
 	@Override
 	protected void finalize() throws Throwable {
 
+	}
+
+
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase#createTable(java.lang.String, java.lang.Class)
+	 */
+	@Override
+	public DatabaseTable createTable(String name, Class<?> layout) {
+		
+		DatabaseTable table = new SQLDatabaseTable(this, name);
+		
+		if (tableExists(name)) {
+			return table;
+		}
+
+		if (!table.create(layout)) {
+			return null;
+		}
+				
+		return table;
 	}
 
 }

@@ -6,6 +6,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 import uk.thecodingbadgers.bDatabaseManager.bDatabaseManager.DatabaseType;
+import uk.thecodingbadgers.bDatabaseManager.DatabaseTable.DatabaseTable;
 import uk.thecodingbadgers.bDatabaseManager.Thread.DatabaseThread;
 
 import org.bukkit.plugin.java.JavaPlugin;
@@ -93,6 +94,11 @@ public abstract class BukkitDatabase {
 	 */
 	public abstract boolean tableExists(String name);
 	
+	
+	/**
+	 * @return A new database table, or the table should it already exist. Should creation fail, null is returned.
+	 */
+	public abstract DatabaseTable createTable(String name, Class<?> layout);
 	
 	/**
 	 * @param query				Add a query to the database thread.

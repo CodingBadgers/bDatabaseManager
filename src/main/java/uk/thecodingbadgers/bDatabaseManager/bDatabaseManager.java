@@ -7,6 +7,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase;
 import uk.thecodingbadgers.bDatabaseManager.Database.SQLDatabase;
 import uk.thecodingbadgers.bDatabaseManager.Database.SQLiteDatabase;
+import uk.thecodingbadgers.bDatabaseManager.DatabaseTable.DatabaseTable;
 
 
 /**
@@ -18,7 +19,14 @@ import uk.thecodingbadgers.bDatabaseManager.Database.SQLiteDatabase;
  */
 public class bDatabaseManager extends JavaPlugin
 {
-
+	
+	/* (non-Javadoc)
+	 * @see org.bukkit.plugin.java.JavaPlugin#onLoad()
+	 */
+	@Override
+	public void onLoad() {
+		DatabaseTable.addDefaultConversions();
+	}
 	
 	/**
 	 * DatabaseType specifies all available database formats currently supported
@@ -55,7 +63,7 @@ public class bDatabaseManager extends JavaPlugin
 	 * @return				The newly created database, or null if creation failed.
 	 */
 	static public BukkitDatabase createDatabase(String name, JavaPlugin owner, DatabaseType type, int updateTime) {
-		
+				
 		BukkitDatabase database = null;
 		
 		switch (type) {

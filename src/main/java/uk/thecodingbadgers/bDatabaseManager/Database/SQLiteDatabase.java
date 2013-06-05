@@ -12,6 +12,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import uk.thecodingbadgers.bDatabaseManager.Utilities;
 import uk.thecodingbadgers.bDatabaseManager.bDatabaseManager.DatabaseType;
+import uk.thecodingbadgers.bDatabaseManager.DatabaseTable.DatabaseTable;
+import uk.thecodingbadgers.bDatabaseManager.DatabaseTable.SQLiteDatabaseTable;
 import uk.thecodingbadgers.bDatabaseManager.Thread.SQLiteThread;
 
 /**
@@ -217,6 +219,25 @@ public class SQLiteDatabase extends BukkitDatabase {
 	@Override
 	public boolean login(String host, String user, String password, int port) {
 		return true;
+	}
+
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase#createTable(java.lang.String, java.lang.Class)
+	 */
+	@Override
+	public DatabaseTable createTable(String name, Class<?> layout) {
+		
+		DatabaseTable table = new SQLiteDatabaseTable(this, name);
+		
+		if (tableExists(name)) {
+			return table;
+		}
+
+		if (!table.create(layout)) {
+			return null;
+		}
+				
+		return table;
 	}
 
 }
