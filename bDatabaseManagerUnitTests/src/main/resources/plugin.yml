@@ -1,0 +1,10 @@
+name: bDatabaseManagerUnitTests
+version: "${project.version}"
+main: uk.thecodingbadgers.bDatabaseManagerUnitTests.bDatabaseManagerUnitTests
+depend: [bDatabaseManager]
+softdepend: []
+website: "http://www.mcbadgercraft.com"
+description: ""
+author: "TheCodingBadgers"
+authors:
+  - "TheCodingBadgers"
