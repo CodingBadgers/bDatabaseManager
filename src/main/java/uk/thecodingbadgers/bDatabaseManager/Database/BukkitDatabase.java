@@ -1,6 +1,5 @@
 package uk.thecodingbadgers.bDatabaseManager.Database;
 
-import java.io.File;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -11,62 +10,116 @@ import uk.thecodingbadgers.bDatabaseManager.Thread.DatabaseThread;
 
 import org.bukkit.plugin.java.JavaPlugin;
 
-public class BukkitDatabase {
+
+/**
+ * @author The Coding Badgers
+ * 
+ * The base abstract database class.
+ *
+ */
+public abstract class BukkitDatabase {
 	
-	protected DatabaseThread m_thread = null;
-	protected JavaPlugin m_plugin = null;
-	protected String m_databaseName = null;
-	protected File m_databaseFile = null;
-	protected Statement m_statement = null;
-	protected int m_updateTime = 0;
+	/**
+	 * The thread which will process the queries.
+	 */
+	protected DatabaseThread 	m_thread = null;
 	
+	/**
+	 * The plugin which the database belongs too.
+	 */
+	protected JavaPlugin 		m_plugin = null;
+	
+	/**
+	 * The SQL statement, used in both SQL and SQLite
+	 */
+	protected Statement 		m_statement = null;
+	
+	/**
+	 * The name of the database
+	 */
+	protected String 			m_databaseName = null;
+	
+	/**
+	 * The rate at which the query thread executes in seconds
+	 */
+	protected int 				m_updateTime = 20;
+	
+	
+	/**
+	 * @param name				The name of the database
+	 * @param owner				The plugin which created the database
+	 * @param type				The type of database this represents
+	 * @param updateTime		The rate at which the query thread executes in seconds
+	 */
 	public BukkitDatabase(String name, JavaPlugin owner, DatabaseType type, int updateTime) {
 		m_plugin = owner;
 		m_databaseName = name;
 		m_updateTime = updateTime;
 	}
 	
-	protected void finalize() throws Throwable
-	{
+	/* (non-Javadoc)
+	 * @see java.lang.Object#finalize()
+	 */
+	protected abstract void finalize() throws Throwable;
 
-	} 
 	
-	public String getName() {
-		return m_databaseName;
+	/**
+	 * @param host				The host address where the database resides.
+	 * @param user				The user account to login to the database with.
+	 * @param password			The password of the database user account.
+	 * @param port				The port of which the database is running on.
+	 * @return					True if login was successful, false otherwise.
+	 */
+	public abstract boolean login(String host, String user, String password, int port);
+	
+	
+	/**
+	 * @param query				The database query to execute.
+	 * @param instant			Should the command be processed instantly, or be executed by the processing thread.
+	 */
+	public abstract void query(String query, boolean instant);
+	
+	
+	/**
+	 * @param query				Execute a query which returns a result.
+	 * @return					A ResultSet containing the result of the database query.
+	 */
+	public abstract ResultSet queryResult(String query);
+	
+	
+	/**
+	 * @param name				The name of a table to check.
+	 * @return					True if a table with the given name exists, false otherwise.
+	 */
+	public abstract boolean tableExists(String name);
+	
+	
+	/**
+	 * @param query				Add a query to the database thread.
+	 */
+	public void query(String query) {
+		query(query, false);
 	}
 	
-	public String getOwnerName() {
-		return m_plugin.getName();
-	}
 	
-	// Only used on sql
-	public boolean login(String host, String user, String password, int port) {
-		return false;
-	}
-	
-	public void Query(String query) {
-		m_thread.Query(query);
-	}
-	
-	public void Query(String query, boolean instant) {
-		
-	}
-	
-	public ResultSet QueryResult(String query) {
-		return null;		
-	}
-	
-	public void FreeResult(ResultSet result) {
+	/**
+	 * @param result			Safely release a ResultSet after it has been used.
+	 */
+	public void freeResult(ResultSet result) {
 		
 		try {
 			
-			if (result != null)
+			if (result != null) {
 				result.close();
+				result = null;
+			}
 			
 			if (m_statement != null) {
 				Connection connection = m_statement.getConnection();
 				m_statement.close();
 				connection.close();
+				m_statement = null;
+				connection = null;				
 			}			
 			
 		} catch(SQLException e) {
@@ -75,26 +128,40 @@ public class BukkitDatabase {
 		
 	}
 	
-	public void End() {
+	
+	/**
+	 * 	Release all database resources
+	 */
+	public void destroyDatabase() {
 		
-		if (m_thread != null) {
-			m_thread.Kill();
-			m_thread = null;			
-		}
-		
-		if (m_statement != null) {
-			try {
-				m_statement.close();
-				m_statement = null;
-			} catch (SQLException e) {
-				e.printStackTrace();
+		try {
+			if (m_thread != null) {
+				m_thread.kill();
+				m_thread = null;			
 			}
-		}
+			
+			if (m_statement != null) {
+					m_statement.close();
+					m_statement = null;
+			}	
+		} catch (SQLException e) {}
 		
 	}
 	
-	public boolean TableExists(String name) {
-		return false;
+	
+	/**
+	 * @return	Get the name of the database.
+	 */
+	public String getName() {
+		return m_databaseName;
+	}
+	
+	
+	/**
+	 * @return	Get the name of the plugin which this database was created by.
+	 */
+	public String getOwnerName() {
+		return m_plugin.getName();
 	}
 
 }

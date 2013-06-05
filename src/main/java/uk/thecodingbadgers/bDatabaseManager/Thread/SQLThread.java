@@ -6,21 +6,38 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.Iterator;
 
-import org.bukkit.plugin.java.JavaPlugin;
-
 import uk.thecodingbadgers.bDatabaseManager.Utilities;
 import uk.thecodingbadgers.bDatabaseManager.Database.SQLDatabase;
 
+/**
+ * @author The Coding Badgers
+ * 
+ * The implementation of the SQL execution thread.
+ *
+ */
 public class SQLThread extends DatabaseThread {
 	
-	SQLDatabase.SQLOptions m_options;
+	/**
+	 * The options of the SQL database.
+	 */
+	SQLDatabase.SQLOptions m_options = null;;
 	
-	public void Setup(String database, JavaPlugin plugin, SQLDatabase.SQLOptions options, int updateTime) {
-		super.Setup(null, plugin, updateTime);
+	
+	/**
+	 * @param database		The name of the database.
+	 * @param options		The options associated with the database.
+	 * @param updateTime	The rate at which the query thread executes in seconds.
+	 */
+	public void setup(String database, SQLDatabase.SQLOptions options, int updateTime) {
+		super.setup(updateTime);
 		m_options = options;
 		m_options.databaseName = database;
 	}
 	
+	
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Thread.DatabaseThread#login(java.lang.String, java.lang.String, java.lang.String, int)
+	 */
 	public void login(String host, String user, String password, int port) {
 		m_options.host = host;
 		m_options.username = user;
@@ -28,24 +45,53 @@ public class SQLThread extends DatabaseThread {
 		m_options.port = port;
 	}
 	
-	protected synchronized void ExecuteQuieries() {
+	
+	/**
+	 * @return 	Get a connection to the SQL database.
+	 */
+	private Connection getConnection() {
 		
-		if (m_queries.size() != 0)
+		try {
+			Class.forName("com.mysql.jdbc.Driver");
+		} catch (ClassNotFoundException e) {
+			Utilities.outputError("Could not find sql drivers");
+			return null;
+		}
+		
+		try {
+			return DriverManager.getConnection(
+				"jdbc:mysql://" + m_options.host + ":" + m_options.port + "/" +
+				m_options.databaseName + "?" +
+				"user=" + m_options.username +
+				"&password=" + m_options.password
+			);
+		} catch (SQLException e) {
+			return null;
+		}
+		
+	}
+	
+	
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Thread.DatabaseThread#executeQuieries()
+	 */
+	protected synchronized void executeQuieries() {
+		
+		if (!m_queries.isEmpty())
 		{		
 			String query = null;
-			Iterator<String> queryItr = null;
-			Connection connection = null;
 			Statement statement = null;
 			
+			Connection connection = getConnection();
 			try {	
-				if ((connection = GetConnection()) == null) {
-					Utilities.OutputError(m_plugin, "Could not connect to database.");
+				if (connection == null) {
+					Utilities.outputError("Could not connect to database.");
 					return;
 				}
 			
 				statement = connection.createStatement();
 				
-				queryItr = m_queries.iterator();
+				Iterator<String> queryItr = m_queries.iterator();
 				while (queryItr.hasNext()) {
 					query = queryItr.next();
 					statement.addBatch(query);	
@@ -57,39 +103,19 @@ public class SQLThread extends DatabaseThread {
 				connection.close();
 				m_queries.clear();
 			} catch (SQLException e) {
-				if (!(e.getMessage().toLowerCase().contains("locking") || e.getMessage().toLowerCase().contains("locked"))) {
-					System.out.println("[BDM] Batch Exception: Exception whilst executing");
-					System.out.println(query);
+				final String errorMessage = e.getMessage().toLowerCase();
+				if (!(errorMessage.contains("locking") || errorMessage.contains("locked"))) {
+					Utilities.outputError("Batch Exception: Exception whilst executing");
+					Utilities.outputError(query);
 					e.printStackTrace();
 					m_queries.remove(query);
 				}	
 				try {
 					statement.close();
 					connection.close();
-				} catch (SQLException ce) {
-				}
+				} catch (SQLException ce) {}
 			}		
 		}				
-	}
-	
-	private Connection GetConnection() {
-		
-		try {
-			Class.forName("com.mysql.jdbc.Driver");
-		} catch (ClassNotFoundException e) {
-			Utilities.OutputError(m_plugin, "Could not find sql drivers");
-		  return null;
-		}
-		
-		try {
-			return DriverManager.getConnection("jdbc:mysql://" + m_options.host + ":" + m_options.port + "/" +
-												m_options.databaseName + "?" +
-												"user=" + m_options.username +
-												"&password=" + m_options.password);
-		} catch (SQLException e) {
-			return null;
-		}
-		
 	}
 
 }

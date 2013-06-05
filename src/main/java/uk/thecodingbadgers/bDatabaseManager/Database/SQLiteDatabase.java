@@ -14,37 +14,59 @@ import uk.thecodingbadgers.bDatabaseManager.Utilities;
 import uk.thecodingbadgers.bDatabaseManager.bDatabaseManager.DatabaseType;
 import uk.thecodingbadgers.bDatabaseManager.Thread.SQLiteThread;
 
+/**
+ * @author The Coding Badgers
+ * 
+ * The implementation of the SQLite database.
+ *
+ */
 public class SQLiteDatabase extends BukkitDatabase {
+	
+	/**
+	 * The SQLite database file.
+	 */
+	private File m_databaseFile = null;
 
+	
+	/**
+	 * @param name			The name of the database.
+	 * @param owner			The plugin which created the database.
+	 * @param updateTime	The rate at which queries are executed in seconds.
+	 */
 	public SQLiteDatabase(String name, JavaPlugin owner, int updateTime) {
 		super(name, owner, DatabaseType.SQLite, updateTime);		
 				
-		if (!CreateDatabase()) {
-			Utilities.OutputError(m_plugin, "Could not create database '" + m_databaseName + "'");
+		if (!createDatabase()) {
+			Utilities.outputError("Could not create database '" + m_databaseName + "'");
 			return;
 		}
 		
 		m_thread = new SQLiteThread();
-		m_thread.Setup(m_databaseFile, m_plugin, updateTime);
+		((SQLiteThread)m_thread).setup(m_databaseFile, updateTime);
 		m_thread.start();
 	}
 	
-	private boolean CreateDatabase() {
+	/**
+	 * @return	create the sqlite file on the hard drive
+	 */
+	private boolean createDatabase() {
 		
-		Utilities.OutputDebug(m_plugin, "Loading " + m_plugin.getDataFolder() + File.separator + m_databaseName + ".sqlite");
+		Utilities.outputDebug("Loading " + m_plugin.getDataFolder() + File.separator + m_databaseName + ".sqlite");
 		
 		m_databaseFile = new File(m_plugin.getDataFolder() + File.separator + m_databaseName + ".sqlite");
 		
-		if (m_databaseFile.exists())
+		if (m_databaseFile.exists()) {
 			return true;
+		}
 		
 		if (!m_plugin.getDataFolder().exists()) {
 			m_plugin.getDataFolder().mkdir();
 		}
 		
 		try {
-			if (!m_databaseFile.createNewFile())
+			if (!m_databaseFile.createNewFile()) {
 				return false;
+			}
 		} catch (IOException e) {
 			e.printStackTrace();
 			return false;
@@ -53,12 +75,16 @@ public class SQLiteDatabase extends BukkitDatabase {
 		return true;
 	}
 	
-	private Connection GetConnection() {
+	
+	/**
+	 * @return	Get a connection to the sqlite database
+	 */
+	private Connection getConnection() {
 		
 		try {
 			Class.forName("org.sqlite.JDBC");
 		} catch (ClassNotFoundException e) {
-			Utilities.OutputError(m_plugin, "Could not find sqlite drivers");
+			Utilities.outputError("Could not find sqlite drivers");
 		  return null;
 		}
 		
@@ -70,17 +96,20 @@ public class SQLiteDatabase extends BukkitDatabase {
 		
 	}
 		
-	public void Query(String query, boolean instant) {
+	
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase#query(java.lang.String, boolean)
+	 */
+	public void query(String query, boolean instant) {
 		
-		if (!instant)
-			m_thread.Query(query);
-		else
-		{
-			Connection connection = null;
+		if (!instant) {
+			m_thread.query(query);
+		} else {
+			
+			final Connection connection = getConnection();
 			try {
-				
-				if ((connection = GetConnection()) == null) {
-					Utilities.OutputError(m_plugin, "Could not connect to database '" + m_databaseName + "'");
+				if (connection == null) {
+					Utilities.outputError("Could not connect to database '" + m_databaseName + "'");
 					return;
 				}
 				
@@ -94,20 +123,21 @@ public class SQLiteDatabase extends BukkitDatabase {
 				try {
 					m_statement.close();
 					connection.close();
-				} catch (SQLException ce) {
-				}
+				} catch (SQLException ce) {}
 			}
 		}
 	}
 	
-	public ResultSet QueryResult(String query) {
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase#queryResult(java.lang.String)
+	 */
+	public ResultSet queryResult(String query) {
 		
-		Connection connection = null;
-		
+		final Connection connection = getConnection();
 		try {
 			
-			if ((connection = GetConnection()) == null) {
-				Utilities.OutputError(m_plugin, "Could not connect to database '" + m_databaseName + "'");
+			if (connection == null) {
+				Utilities.outputError("Could not connect to database '" + m_databaseName + "'");
 				return null;
 			}
 			
@@ -123,7 +153,6 @@ public class SQLiteDatabase extends BukkitDatabase {
 				m_statement.close();
 				m_statement = null;
 				connection.close();
-				return null;
 			}
 
 			return result;
@@ -133,28 +162,30 @@ public class SQLiteDatabase extends BukkitDatabase {
 			try {
 				m_statement.close();
 				connection.close();
-			} catch (SQLException ce) {
-			}
+			} catch (SQLException ce) {}
 		}
 		
 		return null;		
 	}
 			
-	public boolean TableExists(String name) {
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase#tableExists(java.lang.String)
+	 */
+	public boolean tableExists(String name) {
 		
-		Connection connection = null;
+		final Connection connection = getConnection();
 		ResultSet tables = null;
 		
 		try {
 			
-			if ((connection = GetConnection()) == null) {
-				Utilities.OutputError(m_plugin, "Could not connect to database '" + m_databaseName + "'");
+			if (connection == null) {
+				Utilities.outputError("Could not connect to database '" + m_databaseName + "'");
 				return false;
 			}
 			
-			DatabaseMetaData metaData = connection.getMetaData();
+			final DatabaseMetaData metaData = connection.getMetaData();
 			tables = metaData.getTables(null, null, name, null);
-			boolean exists = tables.next();
+			final boolean exists = tables.next();
 			
 			tables.close();
 			connection.close();
@@ -170,6 +201,22 @@ public class SQLiteDatabase extends BukkitDatabase {
 			return false;
 		}		
 		
+	}
+
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase#finalize()
+	 */
+	@Override
+	protected void finalize() throws Throwable {
+
+	}
+
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase#login(java.lang.String, java.lang.String, java.lang.String, int)
+	 */
+	@Override
+	public boolean login(String host, String user, String password, int port) {
+		return true;
 	}
 
 }

@@ -1,5 +1,6 @@
 package uk.thecodingbadgers.bDatabaseManager.Thread;
 
+import java.io.File;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
@@ -8,58 +9,39 @@ import java.util.Iterator;
 
 import uk.thecodingbadgers.bDatabaseManager.Utilities;
 
+/**
+ * @author The Coding Badgers
+ * 
+ * The implementation of the SQLite execution thread.
+ *
+ */
 public class SQLiteThread extends DatabaseThread {
-
-	protected synchronized void ExecuteQuieries() {
-		
-		if (m_queries.size() != 0)
-		{		
-			String query = null;
-			Iterator<String> queryItr = null;
-			Connection connection = null;
-			Statement statement = null;
-			
-			try {	
-				if ((connection = GetConnection()) == null) {
-					Utilities.OutputError(m_plugin, "Could not connect to database.");
-					return;
-				}
-			
-				statement = connection.createStatement();
-				
-				queryItr = m_queries.iterator();
-				while (queryItr.hasNext()) {
-					query = queryItr.next();
-					statement.addBatch(query);	
-				}
-				
-				statement.executeBatch();
-
-				statement.close();
-				connection.close();
-				m_queries.clear();
-			} catch (SQLException e) {
-				if (!(e.getMessage().toLowerCase().contains("locking") || e.getMessage().toLowerCase().contains("locked"))) {
-					System.out.println("[BDM] Batch Exception: Exception whilst executing");
-					System.out.println(query);
-					e.printStackTrace();
-					m_queries.remove(query);
-				}	
-				try {
-					statement.close();
-					connection.close();
-				} catch (SQLException ce) {
-				}
-			}		
-		}				
+	
+	/**
+	 * The file that represents the SQLite database file.
+	 */
+	private File m_databaseFile = null;
+	
+	
+	/**
+	 * @param database		The file that represents the SQLite database file.
+	 * @param updateTime	The rate at which the query thread executes in seconds.
+	 */
+	public void setup(File database, int updateTime) {
+		m_databaseFile = database;
+		super.setup(updateTime);
 	}
 	
-	private Connection GetConnection() {
+	
+	/**
+	 * @return	Get a connection to the SQLite database.
+	 */
+	private Connection getConnection() {
 		
 		try {
 			Class.forName("org.sqlite.JDBC");
 		} catch (ClassNotFoundException e) {
-			Utilities.OutputError(m_plugin, "Could not find sqlite drivers");
+			Utilities.outputError("Could not find sqlite drivers");
 			return null;
 		}
 		
@@ -70,5 +52,59 @@ public class SQLiteThread extends DatabaseThread {
 		}
 		
 	}
+
+	
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Thread.DatabaseThread#executeQuieries()
+	 */
+	protected synchronized void executeQuieries() {
+		
+		if (!m_queries.isEmpty())
+		{		
+			String query = null;
+			Statement statement = null;
+			
+			final Connection connection = getConnection();
+			try {	
+				if (connection == null) {
+					Utilities.outputError("Could not connect to database.");
+					return;
+				}
+			
+				statement = connection.createStatement();
+				
+				Iterator<String> queryItr = m_queries.iterator();
+				while (queryItr.hasNext()) {
+					query = queryItr.next();
+					statement.addBatch(query);	
+				}		
+				statement.executeBatch();
+
+				statement.close();
+				connection.close();
+				m_queries.clear();
+				
+			} catch (SQLException e) {
+				final String errorMessage = e.getMessage().toLowerCase();
+				if (!(errorMessage.contains("locking") || errorMessage.contains("locked"))) {
+					Utilities.outputError("Batch Exception: Exception whilst executing");
+					Utilities.outputError(query);
+					e.printStackTrace();
+					m_queries.remove(query);
+				}	
+				try {
+					statement.close();
+					connection.close();
+				} catch (SQLException ce) {}
+			}		
+		}				
+	}
+	
+
+	/* (non-Javadoc)
+	 * @see uk.thecodingbadgers.bDatabaseManager.Thread.DatabaseThread#login(java.lang.String, java.lang.String, java.lang.String, int)
+	 */
+	@Override
+	public void login(String host, String dbname, String user, int port) {}
 	
 }
