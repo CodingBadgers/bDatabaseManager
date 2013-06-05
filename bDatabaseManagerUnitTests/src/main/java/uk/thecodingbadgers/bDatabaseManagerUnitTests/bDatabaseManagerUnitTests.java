@@ -1,5 +1,6 @@
 package uk.thecodingbadgers.bDatabaseManagerUnitTests;
 
+import java.sql.ResultSet;
 import java.util.logging.Level;
 
 import org.bukkit.Bukkit;
@@ -27,9 +28,10 @@ public class bDatabaseManagerUnitTests extends JavaPlugin {
 		createSQLiteDatabase();
 		createSQLiteTable();
 		insertSQLiteData();
+		selectSQLiteData();
 		
 	}
-
+	
 	@Override
 	public void onDisable() {
 		
@@ -101,4 +103,39 @@ public class bDatabaseManagerUnitTests extends JavaPlugin {
 		log("insertSQLiteData Passed");
 	}
 	
+	private int countResults(ResultSet result) {
+		
+		if (result == null) {
+			return -1;
+		}
+		
+		int noof = 0;
+		try {
+			while (result.next()) {
+				noof++;
+			}
+		} catch (Exception ex) {}
+		
+		return noof;
+		
+	}
+	
+	private void selectSQLiteData() {
+		if (m_sqlTable == null) {
+			return;
+		}
+		
+		ResultSet selectAll = m_sqlTable.select("*");
+		if (selectAll == null || countResults(selectAll) != 3) {
+			log("selectSQLiteData selectAll Failed!");
+		}
+		
+		ResultSet selectSam = m_sqlTable.select("*", "name='SAM'");
+		if (selectSam == null || countResults(selectSam) != 1) {
+			log("selectSQLiteData selectSam Failed!");
+		}
+		
+		log("selectSQLiteData Passed");
+	}
+
 }

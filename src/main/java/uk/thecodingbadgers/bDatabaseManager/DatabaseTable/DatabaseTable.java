@@ -1,6 +1,7 @@
 package uk.thecodingbadgers.bDatabaseManager.DatabaseTable;
 
 import java.lang.reflect.Field;
+import java.sql.ResultSet;
 import java.util.HashMap;
 
 import uk.thecodingbadgers.bDatabaseManager.Utilities;
@@ -92,7 +93,28 @@ public abstract class DatabaseTable {
 		
 		return true;
 	}
+	
+	
+	/**
+	 * @param what
+	 * @return
+	 */
+	public ResultSet select(String what) {
+		String selectQuery = "SELECT " + what + " FROM '" + m_name + "'";
+		return m_database.queryResult(selectQuery);
+	}
 		
+	
+	/**
+	 * @param what
+	 * @param where
+	 * @return
+	 */
+	public ResultSet select(String what, String where) {
+		String selectQuery = "SELECT " + what + " FROM '" + m_name + "' WHERE " + where;
+		return m_database.queryResult(selectQuery);
+	}
+	
 	
 	/**
 	 * @param type
