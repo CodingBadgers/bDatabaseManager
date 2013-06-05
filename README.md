@@ -17,6 +17,33 @@ Features:
  - Ability to return a result from a query.
  - A command to release all data associated with a query result.
  - Fast and light weight.
+ 
+Example:
+------------
+
+// Create an SQLite database
+m_database = bDatabaseManager.createDatabase("MyDatabase", plugin, DatabaseType.SQLite);
+
+// Create a table in the SQLite database
+m_table = m_database.createTable("TestTable", TestData.class);
+
+// Insert some data into the table of the type TestData,
+// also insert the data instantally rather than adding it to the query thread.
+m_table.insert(data, TestData.class, true);
+
+// Select all the data from the table
+ResultSet allData = m_table.select("*");
+
+// Select the name from the table where the id is 7;
+ResultSet id7Data = m_table.select("name", "id='7'");
+
+// Free the results;
+m_database.freeResult(allData);
+m_database.freeResult(id7Data);
+
+// Free the database
+m_sqliteDatabase.freeDatabase();
+
 
 License:
 ------------

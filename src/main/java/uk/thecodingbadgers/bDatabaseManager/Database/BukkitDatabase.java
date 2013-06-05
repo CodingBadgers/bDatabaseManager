@@ -138,7 +138,7 @@ public abstract class BukkitDatabase {
 	/**
 	 * 	Release all database resources
 	 */
-	public void destroyDatabase() {
+	public void freeDatabase() {
 		
 		try {
 			if (m_thread != null) {
@@ -147,8 +147,8 @@ public abstract class BukkitDatabase {
 			}
 			
 			if (m_statement != null) {
-					m_statement.close();
-					m_statement = null;
+				m_statement.close();
+				m_statement = null;
 			}	
 		} catch (SQLException e) {}
 		
