@@ -117,6 +117,30 @@ public abstract class DatabaseTable {
 	
 	
 	/**
+	 * @param data
+	 * @param layout
+	 * @param where
+	 * @param instant
+	 */
+	public void update(DatabaseTableData data, Class<?> layout, String where, boolean instant) {
+		Field[] publicFields = layout.getFields();
+		
+		String fields = "";
+		
+		for (Field field : publicFields) {
+			try {
+				fields += field.getName() + "='" + field.get(data).toString() + "',";
+			} 
+			catch (Exception e) {}
+		}
+		
+		fields = fields.substring(0, fields.length() - 1);
+		
+		String updateQuery = "UPDATE " + m_name + " SET " + fields + " WHERE " + where;		
+		m_database.query(updateQuery, instant);	
+	}
+	
+	/**
 	 * @param type
 	 * @return
 	 */

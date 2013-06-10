@@ -69,12 +69,12 @@ public class bDatabaseManager extends JavaPlugin
 		switch (type) {
 		case SQLite:
 			database = new SQLiteDatabase(name, owner, updateTime);
-			Utilities.outputDebug("The plugin '" + owner.getName() + "' regestered an SQL database called '" + name + "'");
+			Utilities.outputDebug("The plugin '" + owner.getName() + "' regestered an SQLite database called '" + name + "'");
 			break;
 			
 		case SQL:
 			database = new SQLDatabase(name, owner, updateTime);
-			Utilities.outputDebug("The plugin '" + owner.getName() + "' regestered an SQLite database called '" + name + "'");
+			Utilities.outputDebug("The plugin '" + owner.getName() + "' regestered an SQL database called '" + name + "'");
 			break;
 			
 		default:
