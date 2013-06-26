@@ -39,7 +39,7 @@ public abstract class DatabaseTable {
 			return false;
 		}
 				
-		String createTable = "CREATE TABLE '" + m_name + "' (";
+		String createTable = "CREATE TABLE `" + m_name + "` (";
 		for (Field field : publicFields) {			
 			final String fieldName = field.getName();
 			final String fieldType = convertType(field.getType().getSimpleName());	
