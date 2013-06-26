@@ -56,6 +56,7 @@ public abstract class DatabaseTable {
 
 		m_database.query(createTable, true);
 		
+		Utilities.outputDebug("Created table `" + m_name + "` for plugin " + m_database.getOwnerName());
 		return true;
 	}
 	
