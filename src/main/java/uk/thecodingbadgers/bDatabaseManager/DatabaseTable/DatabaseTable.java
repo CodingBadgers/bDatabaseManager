@@ -42,7 +42,7 @@ public abstract class DatabaseTable {
 		String createTable = "CREATE TABLE `" + m_name + "` (";
 		for (Field field : publicFields) {			
 			final String fieldName = field.getName();
-			final String fieldType = convertType(field.getType().getSimpleName());	
+			final String fieldType = convertType(field.getType());	
 			
 			if (fieldType == null) {
 				Utilities.outputError("The given table layout '" + layout.getName() + "' for the table '" + m_name + "' has unknown type '" + field.getType().getSimpleName() + "'.");
@@ -77,6 +77,9 @@ public abstract class DatabaseTable {
 			
 			fields += field.getName() + ",";
 			try {
+				if (field.getType().isEnum()) {
+					values += "\"" + ((Enum<?>)field.get(data)).ordinal() + "\",";
+				}
 				values += "\"" + field.get(data).toString() + "\",";
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -87,7 +90,7 @@ public abstract class DatabaseTable {
 		fields = fields.substring(0, fields.length() - 1) + ") ";
 		values = values.substring(0, values.length() - 1) + ");";
 		
-		String insertQuery = "INSERT INTO '" + m_name + "' " + fields + values;
+		String insertQuery = "INSERT INTO `" + m_name + "` " + fields + values;
 		
 		m_database.query(insertQuery, instant);
 		
@@ -100,7 +103,7 @@ public abstract class DatabaseTable {
 	 * @return
 	 */
 	public ResultSet select(String what) {
-		String selectQuery = "SELECT " + what + " FROM '" + m_name + "'";
+		String selectQuery = "SELECT `" + what + "` FROM '" + m_name + "'";
 		return m_database.queryResult(selectQuery);
 	}
 		
@@ -111,7 +114,7 @@ public abstract class DatabaseTable {
 	 * @return
 	 */
 	public ResultSet select(String what, String where) {
-		String selectQuery = "SELECT " + what + " FROM '" + m_name + "' WHERE " + where;
+		String selectQuery = "SELECT `" + what + "` FROM '" + m_name + "' WHERE " + where;
 		return m_database.queryResult(selectQuery);
 	}
 	
@@ -136,16 +139,20 @@ public abstract class DatabaseTable {
 		
 		fields = fields.substring(0, fields.length() - 1);
 		
-		String updateQuery = "UPDATE " + m_name + " SET " + fields + " WHERE " + where;		
+		String updateQuery = "UPDATE `" + m_name + "` SET " + fields + " WHERE " + where;		
 		m_database.query(updateQuery, instant);	
 	}
 	
 	/**
-	 * @param type
+	 * @param class1
 	 * @return
 	 */
-	protected String convertType(String type) {	
-		return TYPECONVERSION.get(type.toLowerCase());
+	protected String convertType(Class<?> clazz) {	
+		if (clazz.isEnum()) {
+			return "INT";
+		}
+		
+		return TYPECONVERSION.get(clazz.getSimpleName().toLowerCase());
 	}
 	
 	

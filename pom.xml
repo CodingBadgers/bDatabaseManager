@@ -3,7 +3,7 @@
 
     <groupId>uk.thecodingbadgers</groupId>
     <artifactId>bDatabaseManager</artifactId>
-    <version>1.1.0</version>
+    <version>1.1.1</version>
     <name>bDatabaseManager</name>
     <url>http://www.mcbadgercraft.com</url>
     <packaging>jar</packaging>
@@ -24,7 +24,7 @@
         <dependency>
             <groupId>org.bukkit</groupId>
             <artifactId>bukkit</artifactId>
-            <version>1.5.2-R0.1</version>
+            <version>1.5.2-R1.0</version>
         </dependency>
     </dependencies>
 
