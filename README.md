@@ -29,7 +29,7 @@ Example:
     m_table = m_database.createTable("TestTable", TestData.class);
 
     // Insert some data into the table of the type TestData,  
-    // also insert the data instantally rather than adding it to the query thread.  
+    // also insert the data instantly rather than adding it to the query thread.  
     m_table.insert(data, TestData.class, true);
 
     // Select all the data from the table  
@@ -43,7 +43,7 @@ Example:
     m_database.freeResult(id7Data);
 
     // Free the database  
-    m_sqliteDatabase.freeDatabase();
+    m_database.freeDatabase();
 
 License:
 ------------
