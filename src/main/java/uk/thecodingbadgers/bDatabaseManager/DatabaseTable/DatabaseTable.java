@@ -2,10 +2,10 @@ package uk.thecodingbadgers.bDatabaseManager.DatabaseTable;
 
 import java.lang.reflect.Field;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.HashMap;
-
-import uk.thecodingbadgers.bDatabaseManager.Utilities;
 import uk.thecodingbadgers.bDatabaseManager.Database.BukkitDatabase;
+import uk.thecodingbadgers.bDatabaseManager.Utilities;
 
 public abstract class DatabaseTable {
 	
@@ -118,6 +118,15 @@ public abstract class DatabaseTable {
 		String selectQuery = "SELECT `" + what + "` FROM '" + m_name + "' WHERE " + where;
 		return m_database.queryResult(selectQuery);
 	}
+    
+    /**
+	 * @param where
+	 * @return
+	 */
+	public ResultSet selectAll(String where) {
+		String selectQuery = "SELECT * FROM '" + m_name + "' WHERE " + where;
+		return m_database.queryResult(selectQuery);
+	}
 	
 	
 	/**
@@ -127,6 +136,12 @@ public abstract class DatabaseTable {
 	 * @param instant
 	 */
 	public void update(DatabaseTableData data, Class<?> layout, String where, boolean instant) {
+        
+        if (!this.exists(where)) {
+            this.insert(data, layout, true);
+            return;
+        }
+        
 		Field[] publicFields = layout.getFields();
 		
 		String fields = "";
@@ -143,6 +158,27 @@ public abstract class DatabaseTable {
 		String updateQuery = "UPDATE `" + m_name + "` SET " + fields + " WHERE " + where;		
 		m_database.query(updateQuery, instant);	
 	}
+    
+    /**
+     * 
+     * @param where
+     * @return 
+     */
+    public boolean exists(String where) {
+        String query = "SELECT * FROM '" + m_name + "' WHERE " + where;
+        ResultSet result = m_database.queryResult(query);        
+        if (result == null) {
+            return false;
+        }
+
+        try {
+            boolean exists = result.next();
+            return exists;
+        }
+        catch (SQLException ex) {
+            return false;
+        }
+    }
 	
 	/**
 	 * @param class1
